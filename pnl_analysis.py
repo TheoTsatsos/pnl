@@ -27,15 +27,19 @@ def gross_pnl_by_asset(filled: pd.DataFrame) -> pd.Series:
 
 
 def cumulative_gross_pnl(filled: pd.DataFrame) -> pd.DataFrame:
-    filled_sorted = filled.sort_values('currentTime')
+    """Return cumulative gross PnL with timestamps sorted chronologically."""
+    filled_dt = filled.copy()
+    filled_dt['currentTime'] = pd.to_datetime(filled_dt['currentTime'], unit='ns')
+    filled_sorted = filled_dt.sort_values('currentTime')
     filled_sorted['cumulative_pnl'] = filled_sorted['signed_pnl'].cumsum()
     return filled_sorted[['currentTime', 'cumulative_pnl']]
 
 
 def plot_cumulative_pnl(cum_df: pd.DataFrame, output_file: str) -> None:
+    """Plot the cumulative PnL time series."""
     plt.figure(figsize=(10, 5))
     plt.plot(cum_df['currentTime'], cum_df['cumulative_pnl'], marker='o')
-    plt.xlabel('Time')
+    plt.xlabel('Timestamp')
     plt.ylabel('Cumulative Gross PnL')
     plt.title('Cumulative Gross PnL over Time')
     plt.tight_layout()
