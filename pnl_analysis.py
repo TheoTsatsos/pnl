@@ -3,8 +3,21 @@ import matplotlib.pyplot as plt
 
 
 def load_data(path: str) -> pd.DataFrame:
-    """Load csv file with ';' separator."""
-    return pd.read_csv(path, sep=';')
+    """Load csv file with ';' separator and ensure numeric columns."""
+    df = pd.read_csv(path, sep=';')
+    # Convert numeric fields, coercing invalid values to NaN
+    for col in ["tradePx", "tradeAmt"]:
+        df[col] = pd.to_numeric(df[col], errors="coerce")
+
+    # Identify rows where conversion failed
+    invalid_rows = df[df[["tradePx", "tradeAmt"]].isna().any(axis=1)]
+    if not invalid_rows.empty:
+        print(
+            f"Warning: dropping {len(invalid_rows)} rows due to invalid tradePx/tradeAmt"
+        )
+        df = df.dropna(subset=["tradePx", "tradeAmt"])
+
+    return df
 
 
 def calculate_filled_trades(df: pd.DataFrame) -> pd.DataFrame:
