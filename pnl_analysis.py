@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 
 def load_data(path: str) -> pd.DataFrame:
@@ -22,12 +23,9 @@ def load_data(path: str) -> pd.DataFrame:
 
 def calculate_filled_trades(df: pd.DataFrame) -> pd.DataFrame:
     """Return DataFrame with only filled trades and compute signed pnl."""
-    filled = df[df['action'] == 'filled'].copy()
-    side_map = {'buy': -1, 'sell': 1}
-    filled['signed_pnl'] = (
-        filled['tradePx'] * filled['tradeAmt'] *
-        filled['orderSide'].map(side_map)
-    )
+    filled = df[df["action"] == "filled"].copy()
+    sign = np.where(filled["orderSide"] == "buy", -1, 1)
+    filled["signed_pnl"] = filled["tradePx"] * filled["tradeAmt"] * sign
     return filled
 
 
